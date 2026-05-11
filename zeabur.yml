@@ -1,0 +1,9 @@
+name: ziwei-admin
+
+services:
+  - name: admin
+    type: dockerfile
+    dockerfilePath: Dockerfile
+    buildCommand: npm install && npm run build
+    ports:
+      - 80

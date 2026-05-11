@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto.js 收款监听脚本</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #d4af37;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+    h2 {
+      color: #d4af37;
+      margin: 20px 0 10px;
+      font-size: 18px;
+    }
+    .step {
+      background: #16213e;
+      border: 1px solid #d4af37/30;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .step-num {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      background: #d4af37;
+      color: #1a1a2e;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 28px;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    pre {
+      background: #0f0f23;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 12px 0;
+      position: relative;
+    }
+    code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      color: #a5d6ff;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #d4af37;
+      color: #1a1a2e;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .copy-btn:active {
+      background: #b8960f;
+    }
+    .warning {
+      background: #3d1f00;
+      border: 1px solid #ff9800;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 12px 0;
+      color: #ffcc80;
+    }
+    .info {
+      background: #1a3a1a;
+      border: 1px solid #4caf50;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 12px 0;
+      color: #a5d6a7;
+    }
+    .config-section {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    label {
+      display: block;
+      color: #d4af37;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      background: #0f0f23;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #e0e0e0;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+    .generate-btn {
+      width: 100%;
+      padding: 12px;
+      background: #d4af37;
+      color: #1a1a2e;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Auto.js 收款自动充值脚本</h1>
+    
+    <div class="info">
+      此脚本用于监听支付宝/微信收款通知，自动调用后端 API 完成充值。
+    </div>
+
+    <h2>配置你的服务器信息</h2>
+    <div class="config-section">
+      <label>服务器地址（你的后端 API 地址）</label>
+      <input type="text" id="serverUrl" placeholder="例如：http://192.168.1.100:3001" value="">
+      
+      <label>安全密钥（防止恶意调用）</label>
+      <input type="text" id="secretKey" placeholder="设置一个密钥，例如：mySecretKey123" value="">
+      
+      <button class="generate-btn" onclick="generateScript()">生成脚本代码</button>
+    </div>
+
+    <div id="scriptOutput" style="display:none;">
+      <h2>脚本代码</h2>
+      <div class="warning">
+        长按下方代码区域，选择"全选"然后"复制"，粘贴到 Auto.js 中。
+      </div>
+      <pre><button class="copy-btn" onclick="copyScript()">复制</button><code id="scriptCode"></code></pre>
+    </div>
+
+    <h2>使用步骤</h2>
+    <div class="step">
+      <span class="step-num">1</span>
+      <strong>配置服务器地址</strong>
+      <p>在上方输入你的服务器地址（手机能访问的地址）</p>
+    </div>
+    <div class="step">
+      <span class="step-num">2</span>
+      <strong>生成并复制脚本</strong>
+      <p>点击"生成脚本代码"，然后复制生成的代码</p>
+    </div>
+    <div class="step">
+      <span class="step-num">3</span>
+      <strong>在 Auto.js 中创建脚本</strong>
+      <p>打开 Auto.js → 点击"+" → 选择"文件" → 粘贴代码 → 保存</p>
+    </div>
+    <div class="step">
+      <span class="step-num">4</span>
+      <strong>开启必要权限</strong>
+      <p>设置 → 辅助功能 → Auto.js → 开启无障碍服务</p>
+      <p>设置 → 通知 → Auto.js → 允许读取通知</p>
+    </div>
+    <div class="step">
+      <span class="step-num">5</span>
+      <strong>运行脚本</strong>
+      <p>在 Auto.js 中点击运行按钮，脚本将开始监听收款通知</p>
+    </div>
+
+    <div class="warning">
+      <strong>注意：</strong>
+      <ul style="margin-left: 20px; margin-top: 8px;">
+        <li>手机需要保持屏幕常亮或在后台运行</li>
+        <li>支付宝/微信需要开启收款通知</li>
+        <li>脚本只监听通知栏的收款消息，不会读取聊天内容</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    function generateScript() {
+      const serverUrl = document.getElementById('serverUrl').value.trim();
+      const secretKey = document.getElementById('secretKey').value.trim();
+      
+      if (!serverUrl) {
+        alert('请输入服务器地址');
+        return;
+      }
+      if (!secretKey) {
+        alert('请输入安全密钥');
+        return;
+      }
+
+      const script = `"use auto";
+
+// ============================================================
+// 收款自动充值脚本 - 紫微卜运
+// ============================================================
+
+// 配置信息
+const CONFIG = {
+  serverUrl: "${serverUrl}",
+  secretKey: "${secretKey}",
+  // 关键词匹配（根据实际收款通知调整）
+  keywords: {
+    alipay: ["支付宝", "收款", "到账"],
+    wechat: ["微信", "收款", "到账"],
+  },
+  // 轮询间隔（毫秒）
+  pollInterval: 3000,
+};
+
+// 已处理的交易记录（防止重复处理）
+const processedTransactions = new Set();
+
+// 主程序
+function main() {
+  console.log("启动收款监听脚本...");
+  console.log("服务器: " + CONFIG.serverUrl);
+  
+  // 请求通知权限
+  if (!requestNotificationPermission()) {
+    toast("请开启通知读取权限");
+    exit();
+  }
+  
+  // 保持屏幕常亮
+  device.keepScreenOn();
+  
+  // 监听通知
+  events.observeNotification();
+  events.onNotification(function(notification) {
+    processNotification(notification);
+  });
+  
+  console.log("脚本运行中，等待收款通知...");
+  toast("收款监听已启动");
+  
+  // 保持运行
+  while (true) {
+    sleep(1000);
+  }
+}
+
+// 请求通知权限
+function requestNotificationPermission() {
+  try {
+    auto();
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// 处理通知
+function processNotification(notification) {
+  try {
+    const title = notification.getTitle() || "";
+    const text = notification.getText() || "";
+    const content = title + " " + text;
+    
+    console.log("收到通知: " + content);
+    
+    // 检测是否为收款通知
+    let paymentMethod = null;
+    
+    // 检测支付宝
+    for (let kw of CONFIG.keywords.alipay) {
+      if (content.includes(kw)) {
+        paymentMethod = "alipay";
+        break;
+      }
+    }
+    
+    // 检测微信
+    if (!paymentMethod) {
+      for (let kw of CONFIG.keywords.wechat) {
+        if (content.includes(kw)) {
+          paymentMethod = "wechat";
+          break;
+        }
+      }
+    }
+    
+    if (!paymentMethod) return;
+    
+    // 提取金额
+    const amount = extractAmount(content);
+    if (!amount) {
+      console.log("未检测到金额");
+      return;
+    }
+    
+    // 生成交易 ID（防止重复）
+    const transactionId = paymentMethod + "_" + amount + "_" + Date.now();
+    if (processedTransactions.has(transactionId)) {
+      console.log("已处理过此交易");
+      return;
+    }
+    
+    console.log("检测到收款: " + paymentMethod + " " + amount + "元");
+    toast("检测到收款: " + amount + "元");
+    
+    // 调用后端 API
+    autoApprove(paymentMethod, amount, transactionId);
+    
+  } catch (e) {
+    console.error("处理通知出错: " + e);
+  }
+}
+
+// 从文本中提取金额
+function extractAmount(text) {
+  // 匹配 "到账X元" 或 "收款X元" 或 "¥X" 等格式
+  const patterns = [
+    /到账\\s*([\\d.]+)\\s*元/,
+    /收款\\s*([\\d.]+)\\s*元/,
+    /¥\\s*([\\d.]+)/,
+    /([\\d.]+)\\s*元/,
+  ];
+  
+  for (let pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      return parseFloat(match[1]);
+    }
+  }
+  
+  return null;
+}
+
+// 自动审核
+function autoApprove(paymentMethod, amount, transactionId) {
+  try {
+    // 查询待处理的订单
+    const url = CONFIG.serverUrl + "/api/recharge/pending?amount=" + amount + "&payment_method=" + paymentMethod + "&secret=" + CONFIG.secretKey;
+    
+    console.log("查询订单: " + url);
+    
+    const response = http.get(url);
+    if (response.statusCode !== 200) {
+      console.log("查询失败: " + response.statusCode);
+      return;
+    }
+    
+    const data = JSON.parse(response.body.string());
+    if (!data.order) {
+      console.log("没有找到匹配的订单");
+      return;
+    }
+    
+    console.log("找到订单: " + data.order.order_no);
+    
+    // 调用自动审核 API
+    const approveUrl = CONFIG.serverUrl + "/api/recharge/callback";
+    const approveResponse = http.postJson(approveUrl, {
+      order_no: data.order.order_no,
+      amount: amount,
+      payment_method: paymentMethod,
+      transaction_id: transactionId,
+      secret: CONFIG.secretKey,
+    });
+    
+    if (approveResponse.statusCode === 200) {
+      const result = JSON.parse(approveResponse.body.string());
+      if (result.success) {
+        console.log("充值成功: " + result.message);
+        toast("充值成功！+" + data.order.points + "积分");
+        processedTransactions.add(transactionId);
+      } else {
+        console.log("充值失败: " + result.error);
+      }
+    } else {
+      console.log("审核请求失败: " + approveResponse.statusCode);
+    }
+    
+  } catch (e) {
+    console.error("自动审核出错: " + e);
+  }
+}
+
+// 启动
+main();
+`;
+
+      document.getElementById('scriptCode').textContent = script;
+      document.getElementById('scriptOutput').style.display = 'block';
+    }
+
+    function copyScript() {
+      const code = document.getElementById('scriptCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        alert('已复制到剪贴板！');
+      }).catch(() => {
+        // 降级方案
+        const textarea = document.createElement('textarea');
+        textarea.value = code;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('已复制到剪贴板！');
+      });
+    }
+  </script>
+</body>
+</html>
